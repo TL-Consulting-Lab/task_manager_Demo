@@ -1,0 +1,22 @@
+{
+  "name": "task-manager-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Task Manager application",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest --watchAll",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.10",
+    "supertest": "^6.3.4",
+    "eslint": "^8.56.0"
+  }
+}
