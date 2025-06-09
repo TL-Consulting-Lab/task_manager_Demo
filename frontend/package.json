@@ -1,0 +1,13 @@
+{
+  "name": "task-manager-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Task Manager application",
+  "scripts": {
+    "start": "serve -s .",
+    "dev": "serve -s ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}
