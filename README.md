@@ -4,8 +4,8 @@ A full-stack task management application with a Node.js/Express backend and a va
 
 ## Project Structure
 
-- `/backend` - Express.js API server
-- `/frontend` - Vanilla JavaScript frontend application
+- [`/backend`](backend/README.md) - Express.js API server
+- [`/frontend`](frontend/README.md) - Vanilla JavaScript frontend application
 
 ## Getting Started
 
@@ -34,4 +34,6 @@ npm run dev
 - Backend runs on `http://localhost:3000`
 - Frontend runs on `http://localhost:5000`
 
-See individual README files in `backend` and `frontend` directories for more details.
+For more details, see:
+- [Backend Documentation](backend/README.md)
+- [Frontend Documentation](frontend/README.md)
