@@ -14,6 +14,8 @@ npm install
 npm run dev
 ```
 
+The backend server will run on `http://localhost:4000`.
+
 3. Run tests:
 ```bash
 npm test

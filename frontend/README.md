@@ -14,6 +14,9 @@ npm install
 npm run dev
 ```
 
+The frontend application will run on `http://localhost:3000` (or another available port if 3000 is in use).
+Note: Make sure the backend server is running on port 4000.
+
 ## Features
 
 - View all tasks
