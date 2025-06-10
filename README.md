@@ -90,3 +90,89 @@ npm test
 - [Frontend Documentation](frontend/README.md) - UI components and features
 - [Express.js Documentation](https://expressjs.com/)
 - [Jest Documentation](https://jestjs.io/)
+
+## Workflow Diagrams
+
+### Task Creation and Display Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant TaskStore
+
+    User->>Frontend: 1. Enters task details
+    Note over Frontend: Input validation
+    
+    Frontend->>Backend: 2. POST /tasks
+    Note over Backend: Validates input
+    Note over Backend: Checks date format
+    Backend->>TaskStore: 3. Stores task
+    
+    Backend->>Frontend: 4. Returns task data
+    Frontend->>Frontend: 5. Updates UI
+    Note over Frontend: Shows new task
+    
+    alt Periodic Refresh
+        Frontend->>Backend: 6. GET /tasks
+        Backend->>TaskStore: 7. Retrieves tasks
+        Backend->>Frontend: 8. Returns task list
+        Frontend->>Frontend: 9. Updates UI
+    end
+```
+
+### Task Data Flow
+
+```mermaid
+flowchart LR
+    A[User Input] --> B[Frontend Validation]
+    B --> C{Valid Input?}
+    C -->|Yes| D[API Request]
+    C -->|No| E[Show Error]
+    D --> F[Backend Processing]
+    F --> G{Date Valid?}
+    G -->|Yes| H[Create Task]
+    G -->|No| I[Return Error]
+    H --> J[Store Task]
+    J --> K[Return Response]
+    K --> L[Update UI]
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#f66,stroke:#333,stroke-width:2px
+    style I fill:#f66,stroke:#333,stroke-width:2px
+    style L fill:#6f9,stroke:#333,stroke-width:2px
+```
+
+## Data Flow Details
+
+1. **User Input Stage**
+   - User enters task title
+   - Optional: category selection
+   - Optional: due date (DD-MM-YYYY)
+
+2. **Frontend Validation**
+   - Checks for required title
+   - Validates date format
+   - Sanitizes input
+
+3. **API Request**
+   - Sends POST request to `/tasks`
+   - Includes task data in JSON format
+
+4. **Backend Processing**
+   - Validates input data
+   - Checks date format and validity
+   - Generates task ID
+   - Sets default values
+   - Calculates overdue status
+
+5. **Response Handling**
+   - Success: Updates UI with new task
+   - Error: Displays error message
+
+6. **Display Updates**
+   - Adds task to list
+   - Updates task count
+   - Shows success message
+   - Clears input form

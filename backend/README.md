@@ -21,7 +21,11 @@ The backend server will run on `http://localhost:4000`.
 npm test
 ```
 
-## API Endpoints
+## API Documentation
+
+For detailed API documentation including request/response examples, see [API.md](API.md).
+
+## API Endpoints Summary
 
 - `GET /tasks` - Get all tasks
 - `POST /tasks` - Create a new task

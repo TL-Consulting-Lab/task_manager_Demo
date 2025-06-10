@@ -5,103 +5,150 @@
   <title>Task Manager</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2rem; }
-    input, button { margin: 0.5rem 0; padding: 0.5rem; }
+    input, button { margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem; }
     ul { list-style-type: none; padding: 0; }
-    li { margin-bottom: 0.5rem; }
+    li { margin-bottom: 0.5rem; padding: 0.5rem; background: #f5f5f5; border-radius: 4px; }
     .completed { text-decoration: line-through; color: gray; }
+    .overdue { color: red; font-weight: bold; }
+    .due-soon { color: orange; }
   </style>
 </head>
 <body>
   <h2>📝 Task Manager</h2>
 
-  <input type="text" id="taskTitle" placeholder="Enter task..." />
-  <button onclick="addTask()">Add Task</button>
+  <div style="margin-bottom: 1rem;">
+    <input type="text" id="taskTitle" placeholder="Enter task..." />
+    <input type="text" id="taskCategory" placeholder="Enter category..." />
+    <input type="text" id="taskDueDate" placeholder="Due date (DD-MM-YYYY)" />
+    <button onclick="addTask()">Add Task</button>
+  </div>
 
   <ul id="taskList"></ul>
 
   <script>
     const apiUrl = "http://localhost:4000/tasks";
 
-  async function loadTasks() {
-    const res = await fetch(apiUrl);
-    const tasks = await res.json();
+    // Function to format date display
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const [day, month, year] = dateStr.split('-');
+      return `${day}-${month}-${year}`;
+    }
 
-    const list = document.getElementById("taskList");
-    list.innerHTML = "";
+    // Function to check if a task is overdue
+    function isOverdue(dateStr) {
+      if (!dateStr) return false;
+      const [day, month, year] = dateStr.split('-').map(Number);
+      const due = new Date(year, month - 1, day);
+      return due < new Date();
+    }
 
-    tasks.forEach(task => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <span class="${task.completed ? 'completed' : ''}">${task.title}</span>
-        <button onclick="markComplete(${task.id})">✅</button>
-        <button onclick="editTask(${task.id}, '${task.title}')">✏️</button>
-        <button onclick="deleteTask(${task.id})">🗑️</button>
-        <button onclick="markAllComplete()">Mark All as Completed ✅</button>
-      `;
-      list.appendChild(li);
-    });
-  }
-  // Function to add a new task
-  async function addTask() {
-    const title = document.getElementById("taskTitle").value;
-    if (!title) return alert("Please enter a task");
+    async function loadTasks() {
+      const res = await fetch(apiUrl);
+      const tasks = await res.json();
 
-    await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title })
-    });
+      const list = document.getElementById("taskList");
+      list.innerHTML = "";
 
-    document.getElementById("taskTitle").value = "";
-    loadTasks();
-  }
+      tasks.forEach(task => {
+        const li = document.createElement("li");
+        const isTaskOverdue = isOverdue(task.dueDate);
+        li.innerHTML = `
+          <span class="${task.completed ? 'completed' : ''}" 
+                style="${isTaskOverdue && !task.completed ? 'color: red;' : ''}">
+            [${task.category || 'uncategorized'}] ${task.title}
+            ${task.dueDate ? `(Due: ${formatDate(task.dueDate)})` : ''}
+          </span>
+          <button onclick="markComplete(${task.id})">✅</button>
+          <button onclick="editTask(${task.id}, '${task.title}', '${task.category || ''}', '${task.dueDate || ''}')">✏️</button>
+          <button onclick="deleteTask(${task.id})">🗑️</button>
+        `;
+        list.appendChild(li);
+      });
+    }
 
- // Function to mark a task as complete
-  async function markComplete(id) {
-    await fetch(`${apiUrl}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ completed: true })
-    });
-    loadTasks();
-  }
-  // Function to edit a task
-  async function editTask(id, currentTitle) {
-    const newTitle = prompt("Update task title:", currentTitle);
-    if (!newTitle) return;
+    // Function to add a new task
+    async function addTask() {
+      const title = document.getElementById("taskTitle").value;
+      const category = document.getElementById("taskCategory").value;
+      const dueDate = document.getElementById("taskDueDate").value;
+      
+      if (!title) return alert("Please enter a task");
 
-    await fetch(`${apiUrl}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: newTitle })
-    });
-    loadTasks();
-  }
+      if (dueDate && !/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$/.test(dueDate)) {
+        return alert("Invalid date format. Please use DD-MM-YYYY");
+      }
 
-  // Function to delete a task
-  async function deleteTask(id) {
-    if (!confirm('Are you sure you want to delete this task?')) return;
-    await fetch(`${apiUrl}/${id}`, {
-      method: "DELETE"
-    });
-    loadTasks();
-  }
+      await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, category, dueDate })
+      });
 
-  // Function to mark all tasks as completed
-  async function markAllComplete(id) {
-    if (!confirm('Are you sure you want to mark all tasks as completed?')) return;
-    const tasks = await (await fetch(apiUrl)).json();
-    await Promise.all(tasks.map(task => 
-      fetch(`${apiUrl}/${task.id}`, {
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskCategory").value = "";
+      document.getElementById("taskDueDate").value = "";
+      loadTasks();
+    }
+
+    // Function to mark a task as complete
+    async function markComplete(id) {
+      await fetch(`${apiUrl}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: true })
-      })
-    ));
-    loadTasks();
-  }
+      });
+      loadTasks();
+    }
 
-  loadTasks();
+    // Function to edit a task
+    async function editTask(id, currentTitle, currentCategory, currentDueDate) {
+      const newTitle = prompt("Update task title:", currentTitle);
+      if (!newTitle) return;
+      
+      const newCategory = prompt("Update task category:", currentCategory);
+      const newDueDate = prompt("Update due date (DD-MM-YYYY):", currentDueDate);
+      
+      if (newDueDate && !/^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}$/.test(newDueDate)) {
+        return alert("Invalid date format. Please use DD-MM-YYYY");
+      }
+
+      await fetch(`${apiUrl}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          title: newTitle,
+          category: newCategory || currentCategory,
+          dueDate: newDueDate || currentDueDate
+        })
+      });
+      loadTasks();
+    }
+
+    // Function to delete a task
+    async function deleteTask(id) {
+      if (!confirm('Are you sure you want to delete this task?')) return;
+      await fetch(`${apiUrl}/${id}`, {
+        method: "DELETE"
+      });
+      loadTasks();
+    }
+
+    // Function to mark all tasks as completed
+    async function markAllComplete(id) {
+      if (!confirm('Are you sure you want to mark all tasks as completed?')) return;
+      const tasks = await (await fetch(apiUrl)).json();
+      await Promise.all(tasks.map(task => 
+        fetch(`${apiUrl}/${task.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ completed: true })
+        })
+      ));
+      loadTasks();
+    }
+
+    loadTasks();
   </script>
 </body>
 </html>
